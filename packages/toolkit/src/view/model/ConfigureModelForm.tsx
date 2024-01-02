@@ -1,5 +1,5 @@
 import * as React from "react";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import {
   BasicProgressMessageBox,
   ProgressMessageBoxState,
@@ -106,7 +106,7 @@ export const ConfigureModelForm = (props: ConfigureModelFormProps) => {
 
   const updateUserModel = useUpdateUserModel();
 
-  const handleConfigureModel = React.useCallback(() => {
+  const handleConfigureModel = React.useCallback(async () => {
     if (!canEdit) {
       setCanEdit(true);
       return;
@@ -129,57 +129,51 @@ export const ConfigureModelForm = (props: ConfigureModelFormProps) => {
       message: "Updating...",
     }));
 
-    updateUserModel.mutate(
-      {
+    try {
+      await updateUserModel.mutateAsync({
         payload: {
           name: model.name,
           description: description || "",
         },
         accessToken,
-      },
-      {
-        onSuccess: () => {
-          setCanEdit(false);
+      });
 
-          setMessageBoxState(() => ({
-            activate: true,
-            status: "success",
-            description: null,
-            message: "Succeed.",
-          }));
+      setCanEdit(false);
 
-          setFormIsDirty(false);
+      setMessageBoxState(() => ({
+        activate: true,
+        status: "success",
+        description: null,
+        message: "Succeed.",
+      }));
 
-          if (onConfigure) {
-            onConfigure(init);
-          }
+      setFormIsDirty(false);
 
-          if (amplitudeIsInit) {
-            sendAmplitudeData("update_model", {
-              type: "critical_action",
-              process: "model",
-            });
-          }
-        },
-        onError: (error) => {
-          if (axios.isAxiosError(error)) {
-            setMessageBoxState(() => ({
-              activate: true,
-              status: "error",
-              description: getInstillApiErrorMessage(error),
-              message: error.message,
-            }));
-          } else {
-            setMessageBoxState(() => ({
-              activate: true,
-              status: "error",
-              description: null,
-              message: "Something went wrong when update the model",
-            }));
-          }
-        },
+      if (onConfigure) {
+        onConfigure(init);
       }
-    );
+
+      if (amplitudeIsInit) {
+        sendAmplitudeData("update_model", {
+          type: "critical_action",
+          process: "model",
+        });
+      }
+    } catch (error) {
+      const isAxiosError = axios.isAxiosError(error);
+      const description = isAxiosError
+        ? getInstillApiErrorMessage(error)
+        : null;
+      const message = isAxiosError
+        ? error.message
+        : "Something went wrong when update the model";
+      setMessageBoxState(() => ({
+        activate: true,
+        status: "error",
+        description,
+        message,
+      }));
+    }
   }, [
     amplitudeIsInit,
     model,
@@ -197,7 +191,7 @@ export const ConfigureModelForm = (props: ConfigureModelFormProps) => {
    * -----------------------------------------------------------------------*/
 
   const deleteModel = useDeleteModel();
-  const handleDeleteModel = React.useCallback(() => {
+  const handleDeleteModel = React.useCallback(async () => {
     if (!model) return;
 
     setMessageBoxState({
@@ -209,49 +203,46 @@ export const ConfigureModelForm = (props: ConfigureModelFormProps) => {
 
     closeModal();
 
-    deleteModel.mutate(
-      {
+    try {
+      await deleteModel.mutateAsync({
         modelName: model.name,
         accessToken,
-      },
-      {
-        onSuccess: () => {
-          setMessageBoxState({
-            activate: true,
-            message: "Succeed.",
-            description: null,
-            status: "success",
-          });
-          if (amplitudeIsInit) {
-            sendAmplitudeData("delete_model", {
-              type: "critical_action",
-              process: "model",
-            });
-          }
+      });
 
-          if (onDelete) {
-            onDelete(init);
-          }
-        },
-        onError: (error) => {
-          if (axios.isAxiosError(error)) {
-            setMessageBoxState({
-              activate: true,
-              message: `${error.response?.status} - ${error.response?.data.message}`,
-              description: getInstillApiErrorMessage(error),
-              status: "error",
-            });
-          } else {
-            setMessageBoxState({
-              activate: true,
-              message: "Something went wrong when delete the model",
-              description: null,
-              status: "error",
-            });
-          }
-        },
+      setMessageBoxState({
+        activate: true,
+        message: "Succeed.",
+        description: null,
+        status: "success",
+      });
+      if (amplitudeIsInit) {
+        sendAmplitudeData("delete_model", {
+          type: "critical_action",
+          process: "model",
+        });
       }
-    );
+
+      if (onDelete) {
+        onDelete(init);
+      }
+    } catch (error) {
+      const isAxiosError = axios.isAxiosError(error);
+
+      const message = isAxiosError
+        ? `${error.response?.status} - ${error.response?.data.message}`
+        : "Something went wrong when deleting the model";
+
+      const description = isAxiosError
+        ? getInstillApiErrorMessage(error)
+        : null;
+
+      setMessageBoxState({
+        activate: true,
+        message,
+        description,
+        status: "error",
+      });
+    }
   }, [
     init,
     model,
