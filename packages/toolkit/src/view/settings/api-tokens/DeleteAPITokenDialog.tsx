@@ -43,42 +43,35 @@ export const DeleteAPITokenDialog = (props: DeleteAPITokenDialogProps) => {
 
   const deleteAPIToken = useDeleteApiToken();
 
-  const handleDeleteApiToken = () => {
+  const handleDeleteApiToken = async () => {
     if (!accessToken) return;
     setIsLoading(true);
-    deleteAPIToken.mutate(
-      {
+
+    try {
+      await deleteAPIToken.mutateAsync({
         tokenName: deleteTokenName,
         accessToken: accessToken,
-      },
-      {
-        onSuccess: () => {
-          setIsLoading(false);
+      });
+      setIsLoading(false);
 
-          if (onDelete) {
-            onDelete();
-          }
-
-          setOpen(false);
-        },
-        onError: (error) => {
-          if (isAxiosError(error)) {
-            toast({
-              title: "Something went wrong when delete the token",
-              description: getInstillApiErrorMessage(error),
-              variant: "alert-error",
-              size: "large",
-            });
-          } else {
-            toast({
-              title: "Something went wrong when delete the pipeline",
-              variant: "alert-error",
-              size: "large",
-            });
-          }
-        },
+      if (onDelete) {
+        onDelete();
       }
-    );
+
+      setOpen(false);
+      
+    } catch (error) {
+      const description = isAxiosError(error)
+        ? getInstillApiErrorMessage(error)
+        : null;
+
+      toast({
+        title: "Something went wrong when deleting the pipeline",
+        variant: "alert-error",
+        size: "large",
+        description,
+      });
+    }
   };
 
   return (
