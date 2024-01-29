@@ -226,7 +226,6 @@ export const DataResourceForm = (props: DataResourceFormProps) => {
           variant: "alert-success",
           size: "small",
         });
-
       } catch (error) {
         toast({
           title: "Something went wrong when creating the data connector",
@@ -236,8 +235,7 @@ export const DataResourceForm = (props: DataResourceFormProps) => {
             ? getInstillApiErrorMessage(error)
             : "Please try again later",
         });
-      }
-      finally {
+      } finally {
         setIsSaving(false);
       }
 
@@ -283,8 +281,7 @@ export const DataResourceForm = (props: DataResourceFormProps) => {
           ? getInstillApiErrorMessage(error)
           : "Please try again later",
       });
-    }
-    finally {
+    } finally {
       setIsSaving(false);
     }
   }, [

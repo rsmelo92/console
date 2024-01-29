@@ -314,7 +314,6 @@ export const CreateModelForm = (props: CreateModelFormProps) => {
       }
     };
 
-
     // We don't validate the rest of the field if the ID is incorrect
     if (!validateInstillID(modelId as string)) {
       setFieldError("model.new.id", InstillErrors.IDInvalidError);
@@ -344,7 +343,7 @@ export const CreateModelForm = (props: CreateModelFormProps) => {
         },
       };
 
-      await handleCreateModelMutation(payload)
+      await handleCreateModelMutation(payload);
     } else if (modelDefinition === "model-definitions/local") {
       if (!modelId || !modelLocalFile) {
         return;
@@ -360,7 +359,7 @@ export const CreateModelForm = (props: CreateModelFormProps) => {
         },
       };
 
-      await handleCreateModelMutation(payload)
+      await handleCreateModelMutation(payload);
     } else if (modelDefinition === "model-definitions/artivc") {
       if (!modelArtivcGcsBucketPath || !modelArtivcTag) return;
 
@@ -378,7 +377,7 @@ export const CreateModelForm = (props: CreateModelFormProps) => {
         },
       };
 
-      await handleCreateModelMutation(payload)
+      await handleCreateModelMutation(payload);
     } else {
       if (!modelHuggingFaceRepoUrl) return;
 
@@ -392,7 +391,7 @@ export const CreateModelForm = (props: CreateModelFormProps) => {
         },
       };
 
-      await handleCreateModelMutation(payload)
+      await handleCreateModelMutation(payload);
     }
   }, [
     createUserModel,
