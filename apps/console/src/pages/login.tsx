@@ -41,7 +41,7 @@ const LoginPage: NextPageWithLayout = () => {
   async function login(data: z.infer<typeof LoginFormSchema>) {
     try {
       const res = await authLoginAction({ payload: data });
-
+      
       await axios.post("/api/set-user-cookie", {
         key: "instill-auth-session",
         value: JSON.stringify({
@@ -59,6 +59,8 @@ const LoginPage: NextPageWithLayout = () => {
         setChangePasswordIsComplete(true);
       }
     } catch (error) {
+      console.log({error});
+      
       if (isAxiosError(error)) {
         toast({
           title: "Something went wrong when login",
